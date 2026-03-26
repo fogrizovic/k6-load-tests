@@ -36,14 +36,17 @@ jobs:
         uses: grafana/run-k6-action@v1
         with:
           path: ${{ steps.set-test.outputs.file }}
-          flags: --out json=results.json
+          flags: --summary-export=summary.json
 
       - name: Generate HTML report
-        uses: benc-uk/k6-reporter@2.4.0
         if: always()
-        with:
-          filename: results.json
-          reportTitle: k6 — ${{ steps.set-test.outputs.name }}
+        run: |
+          npm install k6-reporter
+          node -e "
+            const { htmlReport } = require('k6-reporter');
+            const fs = require('fs');
+            fs.writeFileSync('k6-summary.html', htmlReport(JSON.parse(fs.readFileSync('summary.json'))));
+          "
 
       - name: Write job summary
         if: always()
