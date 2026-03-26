@@ -1,0 +1,57 @@
+name: manual_run
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Test to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - api
+          - stress
+
+jobs:
+  k6:
+    name: Run k6 tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set test file
+        id: set-test
+        run: |
+          TEST="${{ github.event.inputs.test || 'smoke' }}"
+          echo "file=tests/${TEST}.js" >> $GITHUB_OUTPUT
+          echo "name=${TEST}" >> $GITHUB_OUTPUT
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6
+        uses: grafana/run-k6-action@v1
+        with:
+          path: ${{ steps.set-test.outputs.file }}
+          flags: --out json=results.json
+
+      - name: Generate HTML report
+        uses: benc-uk/k6-reporter@v2
+        if: always()
+        with:
+          filename: results.json
+          reportTitle: k6 — ${{ steps.set-test.outputs.name }}
+
+      - name: Write job summary
+        if: always()
+        run: cat k6-summary.html >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-report-${{ steps.set-test.outputs.name }}
+          path: k6-summary.html
