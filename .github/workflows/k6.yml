@@ -39,7 +39,7 @@ jobs:
           flags: --out json=results.json
 
       - name: Generate HTML report
-        uses: benc-uk/k6-reporter@v3.0.4
+        uses: benc-uk/k6-reporter@3.0.4
         if: always()
         with:
           filename: results.json
