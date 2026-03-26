@@ -39,25 +39,3 @@ jobs:
           K6_CLOUD_PROJECT_ID: 7096245
         with:
           path: ${{ steps.set-test.outputs.file }}
-          flags: --summary-export=summary.json
-
-      - name: Generate HTML report
-        if: always()
-        run: |
-          npm install k6-reporter
-          node -e "
-            const { htmlReport } = require('k6-reporter');
-            const fs = require('fs');
-            fs.writeFileSync('k6-summary.html', htmlReport(JSON.parse(fs.readFileSync('summary.json'))));
-          "
-
-      - name: Write job summary
-        if: always()
-        run: cat k6-summary.html >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: k6-report-${{ steps.set-test.outputs.name }}
-          path: k6-summary.html
