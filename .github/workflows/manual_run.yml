@@ -36,6 +36,7 @@ jobs:
         uses: grafana/run-k6-action@v1
         env:
           K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          K6_CLOUD_PROJECT_ID: 7096245
         with:
           path: ${{ steps.set-test.outputs.file }}
           flags: --out cloud --summary-export=summary.json
