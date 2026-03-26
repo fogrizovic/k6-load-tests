@@ -34,9 +34,11 @@ jobs:
 
       - name: Run k6
         uses: grafana/run-k6-action@v1
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
         with:
           path: ${{ steps.set-test.outputs.file }}
-          flags: --summary-export=summary.json
+          flags: --out cloud --summary-export=summary.json
 
       - name: Generate HTML report
         if: always()
